@@ -1,0 +1,39 @@
+<domain type='qemu'>
+  <name>qemu-demo</name>
+  <uuid>603cc28c-9841-864e-0949-8cc7d3bae9f8</uuid>
+  <memory unit='KiB'>65536</memory>
+  <currentMemory unit='KiB'>65536</currentMemory>
+  <vcpu>1</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc-0.14'>hvm</type>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+  <clock offset='utc'/>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <devices>
+    <emulator>/usr/bin/qemu-kvm</emulator>
+    <interface type='server'>
+      <mac address='52:54:00:22:c9:42'/>
+      <source address='192.168.0.1' port='5558'/>
+    </interface>
+    <interface type='client'>
+      <mac address='52:54:00:8b:c9:51'/>
+      <source address='192.168.0.2' port='5558'/>
+    </interface>
+    <interface type='mcast'>
+      <mac address='52:54:00:6d:90:01'/>
+      <source address='230.0.0.1' port='5558'/>
+    </interface>
+    <interface type='udp'>
+      <mac address='52:54:00:6d:90:02'/>
+      <source address='192.168.0.1' port='5558'/>
+      <destination address='192.168.0.2' port='5558'/>
+     </interface>
+  </devices>
+</domain>

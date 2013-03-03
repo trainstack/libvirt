@@ -210,6 +210,7 @@ VIR_ENUM_IMPL(virQEMUCaps, QEMU_CAPS_LAST,
 
               "rng-random", /* 130 */
               "rng-egd",
+              "net-udp"
     );
 
 struct _virQEMUCaps {
@@ -2294,6 +2295,7 @@ virQEMUCapsInitQMPBasic(virQEMUCapsPtr qemuCaps)
     virQEMUCapsSet(qemuCaps, QEMU_CAPS_NETDEV_BRIDGE);
     virQEMUCapsSet(qemuCaps, QEMU_CAPS_SECCOMP_SANDBOX);
     virQEMUCapsSet(qemuCaps, QEMU_CAPS_NO_KVM_PIT);
+    virQEMUCapsSet(qemuCaps, QEMU_CAPS_NETDEV_UDP);
 }
 
 

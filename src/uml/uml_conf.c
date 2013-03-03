@@ -253,6 +253,11 @@ umlBuildCommandLineNet(virConnectPtr conn,
         virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
                        _("hostdev networking type not supported"));
         goto error;
+    
+    case VIR_DOMAIN_NET_TYPE_UDP:
+        virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                       _("udp unicast networking type not supported"));
+        goto error;
 
     case VIR_DOMAIN_NET_TYPE_LAST:
         break;

@@ -3330,6 +3330,17 @@ qemuBuildHostNetStr(virDomainNetDefPtr net,
        type_sep = ',';
        break;
 
+    case VIR_DOMAIN_NET_TYPE_UDP:
+       virBufferAsprintf(&buf, "socket%cudp=%s:%d%clocaladdr=%s:%d",
+                         type_sep,
+                         net->data.socket_udp.destination_addr,
+                         net->data.socket_udp.destination_port,
+                         type_sep,
+                         net->data.socket_udp.source_addr,
+                         net->data.socket_udp.source_port);
+       type_sep = ',';
+       break;
+
     case VIR_DOMAIN_NET_TYPE_USER:
     default:
         virBufferAddLit(&buf, "user");

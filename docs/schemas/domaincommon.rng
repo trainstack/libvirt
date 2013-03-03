@@ -1693,6 +1693,39 @@
         </group>
         <group>
           <attribute name="type">
+            <value>udp</value>
+          </attribute>
+          <interleave>
+            <element name="source">
+              <attribute name="address">
+                <ref name="ipv4Addr"/>
+              </attribute>
+              <attribute name="port">
+                <ref name="PortNumber"/>
+              </attribute>
+              <empty/>
+            </element>
+            <element name="destination">
+              <attribute name="address">
+                <ref name="ipv4Addr"/>
+              </attribute>
+              <attribute name="port">
+                <ref name="PortNumber"/>
+              </attribute>
+              <empty/>
+            </element>
+            <optional>
+              <element name="mac">
+                <attribute name="address">
+                  <ref name="uniMacAddr"/>
+                </attribute>
+                <empty/>
+              </element>
+            </optional>
+          </interleave>
+        </group>
+        <group>
+          <attribute name="type">
             <value>server</value>
           </attribute>
           <interleave>

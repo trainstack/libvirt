@@ -331,6 +331,7 @@ VIR_ENUM_IMPL(virDomainNet, VIR_DOMAIN_NET_TYPE_LAST,
               "server",
               "client",
               "mcast",
+              "udp",
               "network",
               "bridge",
               "internal",
@@ -1141,6 +1142,11 @@ void virDomainNetDefFree(virDomainNetDefPtr def)
     case VIR_DOMAIN_NET_TYPE_MCAST:
         VIR_FREE(def->data.socket.address);
         break;
+
+    case VIR_DOMAIN_NET_TYPE_UDP:
+        VIR_FREE(def->data.socket_udp.destination_addr);
+        VIR_FREE(def->data.socket_udp.source_addr);
+	break;
 
     case VIR_DOMAIN_NET_TYPE_NETWORK:
         VIR_FREE(def->data.network.name);
@@ -5163,6 +5169,8 @@ virDomainNetDefParseXML(virCapsPtr caps,
     char *script = NULL;
     char *address = NULL;
     char *port = NULL;
+    char *dst_address = NULL;
+    char *dst_port = NULL;
     char *model = NULL;
     char *backend = NULL;
     char *txmode = NULL;
@@ -5248,10 +5256,15 @@ virDomainNetDefParseXML(virCapsPtr caps,
             } else if (!address &&
                        (def->type == VIR_DOMAIN_NET_TYPE_SERVER ||
                         def->type == VIR_DOMAIN_NET_TYPE_CLIENT ||
-                        def->type == VIR_DOMAIN_NET_TYPE_MCAST) &&
+                        def->type == VIR_DOMAIN_NET_TYPE_MCAST  ||
+                        def->type == VIR_DOMAIN_NET_TYPE_UDP) &&
                        xmlStrEqual(cur->name, BAD_CAST "source")) {
                 address = virXMLPropString(cur, "address");
                 port = virXMLPropString(cur, "port");
+            } else if (!dst_address && def->type == VIR_DOMAIN_NET_TYPE_UDP &&
+                       xmlStrEqual(cur->name, BAD_CAST "destination")) {
+                dst_address = virXMLPropString(cur, "address");
+                dst_port = virXMLPropString(cur, "port");
             } else if (!address &&
                        (def->type == VIR_DOMAIN_NET_TYPE_ETHERNET ||
                         def->type == VIR_DOMAIN_NET_TYPE_BRIDGE) &&
@@ -5430,6 +5443,53 @@ virDomainNetDefParseXML(virCapsPtr caps,
             address = NULL;
         }
         break;
+
+    case VIR_DOMAIN_NET_TYPE_UDP:
+            if (port == NULL) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("No <source> 'port' attribute "
+                                 "specified with socket interface"));
+                goto error;
+            }
+            if (virStrToLong_i(port, NULL, 10, &def->data.socket_udp.source_port) < 0) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("Cannot parse <source> 'port' attribute "
+                                 "with socket interface"));
+                goto error;
+            }
+            if (address == NULL) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("No <source> 'address' attribute "
+                                 "specified with socket interface"));
+                goto error;
+            } else {
+                def->data.socket_udp.source_addr = address;
+                address = NULL;
+            }
+            
+            if (dst_port == NULL) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("No <destination> 'port' attribute "
+                                 "specified with socket interface"));
+                goto error;
+            }
+            if (virStrToLong_i(dst_port, NULL, 10, &def->data.socket_udp.destination_port) < 0) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("Cannot parse <destination> 'port' attribute "
+                                 "with socket interface"));
+                goto error;
+            }
+            if (dst_address == NULL) {
+                virReportError(VIR_ERR_INTERNAL_ERROR, "%s",
+                               _("No <destination> 'address' attribute "
+                                 "specified with socket interface"));
+                goto error;
+            } else {
+                def->data.socket_udp.destination_addr = dst_address;
+                address = NULL;
+            }
+            break;
+
 
     case VIR_DOMAIN_NET_TYPE_INTERNAL:
         if (internal == NULL) {
@@ -13208,6 +13268,23 @@ virDomainNetDefFormat(virBufferPtr buf,
         }
         break;
 
+    case VIR_DOMAIN_NET_TYPE_UDP:
+        if (def->data.socket_udp.source_addr) {
+            virBufferAsprintf(buf, "<source address='%s' port='%d'/>\n",
+                              def->data.socket_udp.source_addr, def->data.socket_udp.source_port);
+        } else {
+            virBufferAsprintf(buf, "<source port='%d'/>\n",
+                              def->data.socket_udp.source_port);
+        }
+        if (def->data.socket_udp.source_addr) {
+            virBufferAsprintf(buf, "<destination address='%s' port='%d'/>\n",
+                              def->data.socket_udp.destination_addr, def->data.socket_udp.destination_port);
+        } else {
+            virBufferAsprintf(buf, "<destination port='%d'/>\n",
+                              def->data.socket_udp.destination_port);
+        }
+        break;
+	
     case VIR_DOMAIN_NET_TYPE_INTERNAL:
         virBufferEscapeString(buf, "<source name='%s'/>\n",
                               def->data.internal.name);

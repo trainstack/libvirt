@@ -780,6 +780,7 @@ enum virDomainNetType {
     VIR_DOMAIN_NET_TYPE_SERVER,
     VIR_DOMAIN_NET_TYPE_CLIENT,
     VIR_DOMAIN_NET_TYPE_MCAST,
+    VIR_DOMAIN_NET_TYPE_UDP,
     VIR_DOMAIN_NET_TYPE_NETWORK,
     VIR_DOMAIN_NET_TYPE_BRIDGE,
     VIR_DOMAIN_NET_TYPE_INTERNAL,
@@ -865,6 +866,12 @@ struct _virDomainNetDef {
             char *address;
             int port;
         } socket; /* any of NET_CLIENT or NET_SERVER or NET_MCAST */
+        struct {
+            char* source_addr;
+            int source_port;
+            char* destination_addr;
+            int destination_port;
+        } socket_udp; /* NET_UDP */
         struct {
             char *name;
             char *portgroup;
